@@ -1,8 +1,19 @@
-import java.awt.*
+package nl.frankkie.maxtrix_animations.ui
+
+import nl.frankkie.maxtrix_animations.S
+import nl.frankkie.maxtrix_animations.fileToImage
+import nl.frankkie.maxtrix_animations.model.Frame
+import nl.frankkie.maxtrix_animations.model.MyFile
+import nl.frankkie.maxtrix_animations.parseFile
+import nl.frankkie.maxtrix_animations.util.PreviewLines
+import nl.frankkie.maxtrix_animations.util.drawLinesOnPreviewImage
+import nl.frankkie.maxtrix_animations.util.scaleUpImage
+import java.awt.BorderLayout
+import java.awt.Dimension
+import java.awt.Image
 import java.io.File
 import javax.swing.*
 import kotlin.system.exitProcess
-
 
 fun openUI() {
     try {
@@ -24,7 +35,7 @@ object State {
     var currentImage: Image? = null
     var currentPreviewImage: Image? = null
     var previewScale: Int = 30 //times bigger than actual
-    var drawLines: Boolean = true
+    var drawLines: PreviewLines = PreviewLines.NONE
 }
 
 class Ui {
@@ -33,7 +44,7 @@ class Ui {
     }
 
     private lateinit var jFrame: JFrame
-    private lateinit var statusLabel: Label
+    private lateinit var statusLabel: JLabel
     private lateinit var jMenuBar: JMenuBar
     private lateinit var jListFiles: JList<MyFile>
     private lateinit var jListModel: DefaultListModel<MyFile>
@@ -50,7 +61,7 @@ class Ui {
         jFrame.jMenuBar = jMenuBar
         //Layout
         jFrame.layout = BorderLayout()
-        statusLabel = Label("Load animation project folder")
+        statusLabel = JLabel("Load animation project folder")
         jFrame.add(statusLabel, BorderLayout.SOUTH)
         //List
         jListFiles = JList<MyFile>()
@@ -91,6 +102,35 @@ class Ui {
         }
         jMenuFile.add(itemExit)
         jMenuBar.add(jMenuFile)
+        ///
+        val jMenuView = JMenu(S.view)
+        val jMenuViewGridLine = JMenu(S.gridLines)
+        val gridLinesGroup = ButtonGroup()
+        val gridLinesNone = JRadioButtonMenuItem(S.gridLinesNone)
+        gridLinesNone.isSelected = true
+        gridLinesNone.addActionListener {
+            State.drawLines = PreviewLines.NONE
+            refreshPreview()
+        }
+        val gridLinesStyle1 = JRadioButtonMenuItem(S.gridLinesStyle1)
+        gridLinesStyle1.addActionListener {
+            State.drawLines = PreviewLines.STYLE1
+            refreshPreview()
+        }
+        val gridLinesStyle2 = JRadioButtonMenuItem(S.gridLinesStyle2)
+        gridLinesStyle2.addActionListener {
+            State.drawLines = PreviewLines.STYLE2
+            refreshPreview()
+        }
+        gridLinesGroup.add(gridLinesNone)
+        gridLinesGroup.add(gridLinesStyle1)
+        gridLinesGroup.add(gridLinesStyle2)
+        jMenuViewGridLine.add(gridLinesNone)
+        jMenuViewGridLine.add(gridLinesStyle1)
+        jMenuViewGridLine.add(gridLinesStyle2)
+        jMenuView.add(jMenuViewGridLine)
+        jMenuBar.add(jMenuView)
+        //
         val jMenuHelp = JMenu(S.help)
         val itemAbout = JMenuItem(S.about)
         itemAbout.addActionListener {
@@ -134,17 +174,20 @@ class Ui {
                 selected.frame = frame
             }
         }
-        refreshPreview(selected)
+        refreshPreview()
     }
 
-    private fun refreshPreview(selected: MyFile) = with(State) {
-        val image = fileToImage(selected.file) ?: return
-        currentImage = image
-        //scale up
-        currentPreviewImage = scaleUpImage(image, previewScale)
-        //
-        jImagePanel.invalidate()
-        jImagePanel.repaint()
+    private fun refreshPreview() = with(State) {
+        selectedFile?.let { safeSelectedFile ->
+            val image = fileToImage(safeSelectedFile.file)
+            currentImage = image
+            //scale up
+            val scaledUp = scaleUpImage(image, previewScale)
+            currentPreviewImage = drawLinesOnPreviewImage(scaledUp, previewScale, drawLines)
+            //
+            jImagePanel.invalidate()
+            jImagePanel.repaint()
+        }
     }
 
     private fun exitApp() {
@@ -152,31 +195,5 @@ class Ui {
         if (confirmation == JOptionPane.YES_OPTION) {
             exitProcess(0)
         }
-    }
-}
-
-class MyImagePanel : JPanel() {
-    init {
-        border = BorderFactory.createLineBorder(Color.black)
-    }
-
-    override fun getPreferredSize(): Dimension {
-        return Dimension(250, 200)
-    }
-
-    override fun paintComponent(g: Graphics) {
-        super.paintComponent(g)
-        //
-        with(State) {
-            currentPreviewImage?.let { safeImage ->
-                g.drawImage(safeImage, 0, 0, null, null)
-            }
-        }
-    }
-}
-
-data class MyFile(val file: File, var frame: Frame? = null) {
-    override fun toString(): String {
-        return file.name
     }
 }

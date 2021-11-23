@@ -1,11 +1,11 @@
+package nl.frankkie.maxtrix_animations
+
+import nl.frankkie.maxtrix_animations.model.CRGB
 import java.awt.Color
-import java.awt.Image
-import java.awt.Paint
 import java.awt.image.BufferedImage
 import java.io.File
 import java.util.*
 import javax.imageio.ImageIO
-
 
 fun ledsToSourcecode(leds: List<CRGB>): String {
     val sb = StringBuilder()
@@ -75,40 +75,6 @@ fun xy(x: Int, y: Int): Int {
     return i
 }
 
-fun fileToImage(file: File): BufferedImage? {
+fun fileToImage(file: File): BufferedImage {
     return ImageIO.read(file)
-}
-
-fun scaleUpImage(image: BufferedImage, scale: Int): Image {
-    val temp = BufferedImage(8 * scale, 8 * scale, BufferedImage.TYPE_INT_ARGB)
-    val g = temp.createGraphics()
-    for (y in 0..7) {
-        for (x in 0..7) {
-            val scaledX = x * scale
-            val scaledY = y * scale
-            g.color = Color(image.getRGB(x,y))
-            g.fillRect(scaledX, scaledY, scale, scale)
-        }
-    }
-    return temp
-}
-
-data class CRGB(var r: Int, var g: Int, var b: Int)
-data class Frame(val leds: List<CRGB>, var duration: Int? = 0, var brightness: Int? = 0)
-data class Animation(val frames: List<Frame>, var times: Int?, var colorPallet: Int?)
-
-//Strings for translations
-object S {
-    const val closeAppConfirmation = "Close app?"
-    const val appName = "Matrix Animations"
-    const val file = "File"
-    const val new = "New"
-    const val open = "Open"
-    const val openDot = "Open..."
-    const val openFolderError = "Open folder error"
-    const val save = "Save"
-    const val exit = "Exit"
-    const val help = "Help"
-    const val about = "About"
-    const val aboutDesc = "About\n\nMatrix Animations\n\nBy FrankkieNL"
 }

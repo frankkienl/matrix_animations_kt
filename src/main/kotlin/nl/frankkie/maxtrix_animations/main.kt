@@ -1,5 +1,8 @@
+import nl.frankkie.maxtrix_animations.ledsToBase64
+import nl.frankkie.maxtrix_animations.ledsToSourcecode
+import nl.frankkie.maxtrix_animations.parseFile
+import nl.frankkie.maxtrix_animations.ui.openUI
 import java.io.File
-import java.util.*
 import kotlin.system.exitProcess
 
 fun main(args: Array<String>) {

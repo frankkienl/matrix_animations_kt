@@ -1,4 +1,6 @@
 import junit.framework.TestCase
+import nl.frankkie.maxtrix_animations.base64ToLeds
+import nl.frankkie.maxtrix_animations.ledsToBase64
 
 class UtilKtTest : TestCase() {
 
